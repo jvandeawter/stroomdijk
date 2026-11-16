@@ -1,0 +1,11 @@
+# geheimen en lokale instellingen
+.env
+*.secret.*
+geheim/
+# Python en Node
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+# macOS
+.DS_Store
