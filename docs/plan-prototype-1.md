@@ -27,7 +27,7 @@ Klaar als: op de Pi de hele route werkt, van hotspot tot gevuld dashboard. Het e
 
 De Pi draait Debian 13 en hangt via de kabel aan het netwerk (eth0). Wifi (wlan0) staat uit. NetworkManager en avahi draaien. Er is ruim geheugen vrij (zo'n 6,5 GB) en meer dan 100 GB schijf. In `~/docker/compose.yaml` draaien vier containers op het host-netwerk: `home` (nginx, 80), `energie-dashboard` (8080), `mosquitto` (1883) en `homeassistant` (8123, met Bluetooth). Die blijven allemaal ongemoeid. De poorten 8090, 8091 en 8124 zijn vrij.
 
-In het netwerk staan een Enphase Envoy, SolarEdge, een P1-dongle (merk nog onbekend) en de Anker Solarbank met meter. Het eigen dashboard leest de Envoy lokaal, SolarEdge via de cloud (elke 10 minuten, dus zo'n 144 verzoeken per dag) en de Anker via Modbus.
+In het netwerk staan een Enphase Envoy, SolarEdge, een P1-dongle (Zonneplan Connect) en de Anker Solarbank met meter. Het eigen dashboard leest de Envoy lokaal, SolarEdge via de cloud (elke 10 minuten, dus zo'n 144 verzoeken per dag) en de Anker via Modbus.
 
 ## Architectuur
 
@@ -79,8 +79,8 @@ Prototype 1 laat de live waarden zien: net (afname en teruglevering, per fase, s
 
 | Apparaat | Hoe gevonden | Koppeling in Home Assistant | Aandachtspunt |
 |---|---|---|---|
-| P1-dongle | zeroconf (bij HomeWizard) | officieel, lokaal | Als eerste koppelen. Merk nog bevestigen. Bij HomeWizard moet "Lokale API" aan staan in de app. |
-| Enphase Envoy | zeroconf | officieel `enphase_envoy`, lokaal | Vraagt een Enlighten-account. Het eigen dashboard leest de Envoy ook. Na het koppelen controleren we dat het eigen dashboard gewoon doorloopt. |
+| Enphase Envoy | zeroconf | officieel `enphase_envoy`, lokaal | Als eerste koppelen. Vraagt een Enlighten-account. Het eigen dashboard leest de Envoy ook. Na het koppelen controleren we dat het eigen dashboard gewoon doorloopt. |
+| P1-dongle (Zonneplan Connect) | niet | geen | Er is geen officiële lokale koppeling gevonden, alleen een onofficiële via de Zonneplan-cloud. Die gebruiken we niet. In dit huis doet prototype 1 daarom eerst alleen zon. Net en huisverbruik komen later. |
 | SolarEdge | met de hand toevoegen | officieel `solaredge`, cloud | Daglimiet op verzoeken, het eigen dashboard gebruikt er al zo'n 144 per dag van. Eerst uitzoeken hoeveel Home Assistant erbij vraagt. Als laatste koppelen, of overslaan als het niet past. |
 | Anker Solarbank en meter | niet | geen | Stroomdijk koppelt deze niet. Er mag maar één Modbus-verbinding zijn en die is van het eigen dashboard, en een officiële integratie is er niet. In de app staat hij als "niet ondersteund" met uitleg. |
 
@@ -132,9 +132,9 @@ Op de Pi, buiten git: `~/stroomdijk/ha-config/` (data van de eigen Home Assistan
 
 Elke mijlpaal is klein, werkt op zichzelf en wordt apart gecommit.
 
-**M0. Voorbereiding (door jou).** Doorgeven welk merk de P1-dongle is. Verder niets: Home Assistant en het token regelt Stroomdijk zelf.
+**M0. Voorbereiding.** Er is niets nodig: Home Assistant en het token regelt Stroomdijk zelf. De P1-dongle blijkt een Zonneplan Connect te zijn, zie de tabel hierboven.
 
-**M1. Eigen Home Assistant naast de bestaande.** Container `stroomdijk-ha` op poort 8124 starten. Stroomdijk richt hem in via de onboarding-API (of jij doet dat eenmalig in de browser). Daarna een script dat via WebSocket laat zien wat hij in het netwerk gevonden heeft. Klaar als: we zien of de Envoy en de P1-dongle gevonden worden, en de eigen Home Assistant, Bluetooth en het eigen dashboard ongestoord doordraaien.
+**M1. Eigen Home Assistant naast de bestaande.** Container `stroomdijk-ha` op poort 8124 starten. Stroomdijk richt hem in via de onboarding-API (of jij doet dat eenmalig in de browser). Daarna een script dat via WebSocket laat zien wat hij in het netwerk gevonden heeft. Klaar als: we zien of de Envoy gevonden wordt, en de eigen Home Assistant, Bluetooth en het eigen dashboard ongestoord doordraaien.
 
 **M2. App-kern met tests op de Mac.** HA-client, inrichten, rollen en regels, getest tegen een nep-Home Assistant. Klaar als: `pytest` groen is zonder Pi.
 
@@ -142,7 +142,7 @@ Elke mijlpaal is klein, werkt op zichzelf en wordt apart gecommit.
 
 **M4. Gevonden apparaten.** De pagina "Apparaten" toont de energieapparaten die `stroomdijk-ha` gevonden heeft, plus een knop om SolarEdge met de hand toe te voegen. De Anker staat erbij als "niet ondersteund". Klaar als: de lijst klopt met wat er in het netwerk staat.
 
-**M5. Koppelen en dashboard vullen.** Een koppel-wizard per apparaat: eerst de P1-dongle, dan de Envoy en als laatste eventueel SolarEdge. Na elke koppeling vallen de sensoren vanzelf in de rollen en verschijnen de tegels. Klaar als: het dashboard live de echte waarden toont, zonder handwerk en zonder dubbel tellen, en het eigen dashboard na elke koppeling gewoon doorloopt.
+**M5. Koppelen en dashboard vullen.** Een koppel-wizard per apparaat: eerst de Envoy en daarna eventueel SolarEdge. Het net komt in dit huis pas als er een officieel uit te lezen P1-meter is. Na elke koppeling vallen de sensoren vanzelf in de rollen en verschijnen de tegels. Klaar als: het dashboard live de echte waarden toont, zonder handwerk en zonder dubbel tellen, en het eigen dashboard na elke koppeling gewoon doorloopt.
 
 **M6. Wifi instellen.** Container `stroomdijk-setup` met hotspot en instelpagina, getest op wlan0 terwijl de kabel de hoofdverbinding blijft. Daarvoor zet jij eenmalig wifi aan op de Pi (wifi-land en blokkade opheffen, met sudo). Klaar als: je met je telefoon via "Stroomdijk-xxxx" een wifi kunt kiezen, de Pi verbindt, en kabel, Tailscale, Bluetooth en het eigen dashboard ongestoord blijven. Daarna gaat de hotspot weer uit.
 
@@ -165,7 +165,7 @@ Grafieken en historie, batterij, warmtepomp en kosten, slim sturen, inloggen op 
 
 ## Open vragen
 
-1. Welk merk is de P1-dongle?
+1. P1 voor het product: veel klanten hebben straks een dongle van hun leverancier (zoals Zonneplan Connect) die niet officieel uit te lezen is. Krijgt het Stroomdijk-kastje dan een eigen P1-meter mee, of werken we met een dongle met doorgeefpoort? Dat raakt de prijs en de inhoud van het kastje. Ook uitzoeken of de Zonneplan Connect blijft werken naast een tweede meter.
 2. Mag `stroomdijk-ha` de Envoy ook uitlezen, naast het eigen dashboard? Mijn voorstel: ja, met controle achteraf.
 3. SolarEdge: akkoord dat we die als laatste doen, en hem overslaan als de daglimiet niet past naast het eigen dashboard?
 4. Anker: bij een klant zonder het eigen dashboard zou Stroomdijk de enige zijn die de meter uitleest. Moeten we voor later uitzoeken of dat officieel via Modbus kan (Modbus TCP staat in de Anker-app), of laten we de Anker in het product voorlopig weg?

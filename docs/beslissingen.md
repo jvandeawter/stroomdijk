@@ -20,3 +20,6 @@ Het Stroomdijk-dashboard krijgt de look en indeling van het eigen dashboard, maa
 
 ## 2026-11-16: mockup goedgekeurd
 De klikbare mockup in mockup/index.html (wifi, inrichten, apparaten, koppelen, dashboard) is akkoord en is de richting voor de schermen van prototype 1. Waarom: zo bouwen we naar een beeld dat al is goedgekeurd.
+
+## 2026-11-16: prototype 1 eerst alleen zon
+De P1-dongle in het testhuis is een Zonneplan Connect. Daarvoor is geen officiële lokale koppeling gevonden, alleen een onofficiële via de Zonneplan-cloud, en die gebruiken we niet. Prototype 1 koppelt daarom in dit huis eerst alleen zon (Enphase, eventueel SolarEdge). Hoe Stroomdijk bij klanten met zo'n leveranciersdongle aan P1-gegevens komt, is een open punt voor het product.
