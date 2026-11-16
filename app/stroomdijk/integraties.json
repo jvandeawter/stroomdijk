@@ -1,5 +1,9 @@
 {
   "_uitleg": "Toegestane energie-integraties en hun rolregels. Alleen officiële of lokale Home Assistant-integraties. 'geverifieerd' staat op false zolang de sleutels niet met een echt apparaat zijn gecontroleerd. Een regel past als device_class gelijk is (uit de state) en de translation_key in 'sleutel' staat of 'bevat' voorkomt in translation_key of unique_id.",
+  "_niet_ondersteund": [
+    {"naam": "Anker Solarbank", "omschrijving": "Thuisbatterij", "reden": "Er is nog geen officiële koppeling. We laten het je weten zodra het kan."},
+    {"naam": "Zonneplan Connect", "omschrijving": "P1-dongle", "reden": "Hiervoor is geen officiële koppeling bekend, alleen via de cloud van Zonneplan."}
+  ],
   "enphase_envoy": {
     "naam": "Enphase Envoy",
     "label": "Enphase",

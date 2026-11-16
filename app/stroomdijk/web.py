@@ -8,6 +8,8 @@ import time
 
 from aiohttp import web
 
+from .ha_client import HAFout
+
 STATIC = os.path.join(os.path.dirname(__file__), "static")
 PING = 15.0
 
@@ -18,13 +20,24 @@ def _momentopname(huis) -> dict:
     return o
 
 
-def maak_app(huis, ping: float = PING) -> web.Application:
+def maak_app(huis, apparaten=None, ping: float = PING) -> web.Application:
     app = web.Application()
     app["huis"] = huis
 
-    async def index(request):
-        return web.FileResponse(os.path.join(STATIC, "index.html"),
-                                headers={"Cache-Control": "no-cache"})
+    def pagina(naam):
+        async def toon(request):
+            return web.FileResponse(os.path.join(STATIC, naam), headers={"Cache-Control": "no-cache"})
+        return toon
+
+    index = pagina("index.html")
+
+    async def apparaten_api(request):
+        if apparaten is None:
+            return web.json_response({"fout": "niet beschikbaar"}, status=404)
+        try:
+            return web.json_response(await apparaten.lijst())
+        except HAFout as e:
+            return web.json_response({"fout": str(e)}, status=503)
 
     async def nu(request):
         return web.json_response(_momentopname(huis))
@@ -63,6 +76,8 @@ def maak_app(huis, ping: float = PING) -> web.Application:
         return resp
 
     app.router.add_get("/", index)
+    app.router.add_get("/apparaten", pagina("apparaten.html"))
+    app.router.add_get("/api/apparaten", apparaten_api)
     app.router.add_get("/api/now", nu)
     app.router.add_get("/api/stream", stroom)
     app.router.add_get("/healthz", gezond)

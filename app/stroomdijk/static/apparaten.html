@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apparaten · Stroomdijk</title>
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/stijl.css">
+</head>
+<body>
+<main>
+  <header class="banner">
+    <svg class="scene" viewBox="0 0 680 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <circle cx="560" cy="58" r="30" style="fill:var(--sun)" opacity=".18"/>
+      <path d="M0 128 C120 118 220 104 330 100 C450 96 560 110 680 118 V150 H0Z" style="fill:var(--batt)" opacity=".10"/>
+      <path d="M0 128 C120 118 220 104 330 100 C450 96 560 110 680 118" fill="none" style="stroke:var(--batt)" stroke-width="1.5" opacity=".35"/>
+      <g fill="none" style="stroke:var(--muted)" stroke-width="1.5" opacity=".5" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M410 100 432 82 454 100"/><path d="M414 97v4h36v-4"/>
+        <path d="M418 90 432 79 446 90" style="stroke:var(--home)"/>
+        <path d="M300 104v-24M296 104h8"/><path d="M316 103v-18M312 103h8"/>
+      </g>
+    </svg>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="40" cy="22" r="10" style="fill:var(--sun)"/>
+        <path d="M6 48 C20 40 34 38 58 42" fill="none" style="stroke:var(--batt)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M6 56 C22 50 36 48 58 51" fill="none" style="stroke:var(--home)" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+      </svg>
+      <div>
+        <h1>Apparaten</h1>
+        <div class="sub" style="margin-top:2px">Wat Stroomdijk in je huis vond en wat er gekoppeld is</div>
+        <div class="sub" style="margin-top:6px"><span class="dot off" id="dot"></span><span id="upd">Zoeken…</span></div>
+      </div>
+    </div>
+    <div class="merk sub">Stroomdijk</div>
+  </header>
+
+  <nav class="tabs">
+    <a href="/">Energie</a>
+    <a href="/apparaten" class="on">Apparaten</a>
+  </nav>
+  <div class="err" id="err" hidden></div>
+  <div id="inhoud"></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const SOORT = { enphase_envoy: ["☀", "--sun"], solaredge: ["☀", "--sun"], homewizard: ["P1", "--grid"] };
+const ico = (integratie, fallback) => {
+  const [t, c] = SOORT[integratie] || fallback || ["•", "--muted"];
+  return `<div class="ico" style="--c:var(${c})">${t}</div>`;
+};
+const BRON = { zeroconf: "gevonden op je netwerk", ssdp: "gevonden op je netwerk", dhcp: "gevonden op je netwerk",
+               bluetooth: "gevonden via Bluetooth" };
+const LATER = `<button disabled title="Koppelen komt in de volgende stap">Koppelen</button>`;
+
+function rij(icoon, naam, uitleg, rechts) {
+  return `<div class="dev">${icoon}<div><div class="nm">${esc(naam)}</div><div class="ds">${uitleg}</div></div>${rechts}</div>`;
+}
+
+function teken(d) {
+  let h = "";
+  h += `<section class="lijst"><h2>Gevonden in je huis</h2>`;
+  h += d.gevonden.length ? d.gevonden.map(g => rij(ico(g.integratie), g.naam,
+        `${esc(g.omschrijving)} · ${BRON[g.bron] || esc(g.bron)}${g.info.host ? " · " + esc(g.info.host) : ""}`, LATER)).join("")
+      : `<div class="geen">Nog geen nieuwe energieapparaten gevonden. Stroomdijk blijft zoeken.</div>`;
+  h += `</section>`;
+
+  if (d.gekoppeld.length) {
+    h += `<section class="lijst"><h2>Gekoppeld</h2>${d.gekoppeld.map(g => rij(ico(g.integratie), g.naam,
+          `${esc(g.omschrijving)}${g.titel && g.titel !== g.integratie ? " · " + esc(g.titel) : ""}`,
+          g.status === "loaded" ? `<span class="pill ok">Gekoppeld</span>` : `<span class="pill no">Storing</span>`)).join("")}</section>`;
+  }
+
+  if (d.handmatig.length) {
+    h += `<section class="lijst"><h2>Mis je iets?</h2><p class="sub">Sommige apparaten zitten niet in je netwerk maar in de cloud van de fabrikant. Die voeg je met de hand toe.</p>
+          ${d.handmatig.map(g => rij(ico(g.integratie), g.naam, `${esc(g.omschrijving)} · via de cloud`,
+          `<button disabled title="Toevoegen komt in de volgende stap">Toevoegen</button>`)).join("")}</section>`;
+  }
+
+  if (d.niet_ondersteund.length) {
+    h += `<section class="lijst"><h2>Nog niet mogelijk</h2>${d.niet_ondersteund.map(n => rij(ico(null, ["–", "--muted"]),
+          n.naam, `${esc(n.omschrijving)} · ${esc(n.reden)}`, `<span class="pill no">Nog niet</span>`)).join("")}</section>`;
+  }
+  $("inhoud").innerHTML = h;
+}
+
+async function laad() {
+  try {
+    const r = await fetch("/api/apparaten");
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.fout || r.status);
+    teken(d);
+    $("err").hidden = true;
+    $("dot").className = "dot";
+    $("upd").textContent = "Bijgewerkt " + new Date().toLocaleTimeString("nl-NL");
+  } catch (e) {
+    $("dot").className = "dot off";
+    $("upd").textContent = "Geen verbinding";
+    $("err").hidden = false;
+    $("err").textContent = "Stroomdijk kan de apparatenlijst nu niet ophalen. Hij probeert het zo opnieuw.";
+  }
+}
+laad();
+setInterval(laad, 10000);
+</script>
+</body>
+</html>

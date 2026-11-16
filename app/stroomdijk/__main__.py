@@ -14,11 +14,11 @@ import aiohttp
 from aiohttp import web
 
 from .config import Instellingen, Status
-from .demo import DemoHuis
+from .demo import DemoApparaten, DemoHuis
 from .ha_client import HAClient
 from .huis import Huis
 from .inrichten import bevestig_http_config, richt_in
-from .ontdekken import laad_integraties
+from .ontdekken import Apparatenlijst, laad_integraties
 from .web import maak_app
 
 log = logging.getLogger("stroomdijk")
@@ -33,6 +33,7 @@ async def main() -> None:
     if os.environ.get("STROOMDIJK_DEMO") == "1":
         log.info("demomodus: nepwaarden, geen Home Assistant")
         huis = DemoHuis()
+        apparaten = DemoApparaten()
         await huis.start()
     else:
         token = inst.lees_token()
@@ -44,11 +45,13 @@ async def main() -> None:
         async def bevestig():
             await bevestig_http_config(client)
         client.bij_verbinden.append(bevestig)
-        huis = Huis(client, Status.laad(inst.data_dir), laad_integraties())
+        integraties = laad_integraties()
+        huis = Huis(client, Status.laad(inst.data_dir), integraties)
+        apparaten = Apparatenlijst(client, integraties)
         await huis.start()
         await client.start()
 
-    runner = web.AppRunner(maak_app(huis))
+    runner = web.AppRunner(maak_app(huis, apparaten))
     await runner.setup()
     await web.TCPSite(runner, "0.0.0.0", inst.poort).start()
     log.info("Stroomdijk luistert op poort %s", inst.poort)

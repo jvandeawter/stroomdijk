@@ -12,6 +12,20 @@ import time
 from typing import Callable, List, Optional
 
 
+class DemoApparaten:
+    async def lijst(self) -> dict:
+        return {
+            "gevonden": [{"integratie": "enphase_envoy", "naam": "Enphase Envoy", "omschrijving": "Zonnepanelen",
+                          "flow_id": "demo", "bron": "zeroconf", "info": {"serial": "000000000000"}}],
+            "gekoppeld": [{"integratie": "homewizard", "naam": "HomeWizard", "omschrijving": "Slimme meter",
+                           "titel": "P1-meter", "entry_id": "demo", "status": "loaded"}],
+            "handmatig": [{"integratie": "solaredge", "naam": "SolarEdge", "omschrijving": "Zonnepanelen",
+                           "flow_id": "", "bron": "handmatig", "info": {}}],
+            "niet_ondersteund": [{"naam": "Anker Solarbank", "omschrijving": "Thuisbatterij",
+                                  "reden": "Er is nog geen officiële koppeling."}],
+        }
+
+
 class DemoHuis:
     def __init__(self, interval: float = 2.0):
         self.interval = interval

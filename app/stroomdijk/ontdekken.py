@@ -3,8 +3,8 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, field
-from typing import Dict, List
+from dataclasses import asdict, dataclass, field
+from typing import Dict, List, Optional
 
 from .ha_client import HAClient
 
@@ -46,6 +46,34 @@ def handmatig(integraties: Dict[str, dict], gekoppeld: set) -> List[Gevonden]:
     """Integraties die je met de hand toevoegt (cloud), en die nog niet gekoppeld zijn."""
     return [Gevonden(integratie=d, naam=c["naam"], omschrijving=c.get("omschrijving", ""), bron="handmatig")
             for d, c in integraties.items() if c.get("handmatig") and d not in gekoppeld]
+
+
+def laad_niet_ondersteund(pad: str = _PAD) -> List[dict]:
+    with open(pad, encoding="utf-8") as f:
+        return list(json.load(f).get("_niet_ondersteund", []))
+
+
+class Apparatenlijst:
+    """Alles voor de pagina Apparaten: gevonden, gekoppeld, handmatig, niet ondersteund."""
+
+    def __init__(self, client: HAClient, integraties: Dict[str, dict],
+                 niet_ondersteund: Optional[List[dict]] = None):
+        self.client = client
+        self.integraties = integraties
+        self.niet_ondersteund = laad_niet_ondersteund() if niet_ondersteund is None else niet_ondersteund
+
+    async def lijst(self) -> dict:
+        entries = await gekoppelde_integraties(self.client, self.integraties)
+        gekoppeld_domeinen = {e["domain"] for e in entries}
+        return {
+            "gevonden": [asdict(g) for g in await gevonden(self.client, self.integraties)],
+            "gekoppeld": [{"integratie": e["domain"], "naam": self.integraties[e["domain"]]["naam"],
+                           "omschrijving": self.integraties[e["domain"]].get("omschrijving", ""),
+                           "titel": e.get("title", ""), "entry_id": e["entry_id"],
+                           "status": e.get("state", "")} for e in entries],
+            "handmatig": [asdict(g) for g in handmatig(self.integraties, gekoppeld_domeinen)],
+            "niet_ondersteund": self.niet_ondersteund,
+        }
 
 
 async def gevonden(client: HAClient, integraties: Dict[str, dict]) -> List[Gevonden]:

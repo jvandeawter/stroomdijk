@@ -33,8 +33,8 @@ services:
     mem_limit: 256m
     environment:
       - TZ=Europe/Amsterdam
-      # 1 = nepwaarden (om het dashboard te bekijken), 0 = echte gegevens uit stroomdijk-ha
-      - STROOMDIJK_DEMO=${STROOMDIJK_DEMO:-1}
+      # 0 = echte gegevens uit stroomdijk-ha, 1 = nepwaarden (zet STROOMDIJK_DEMO=1 in ~/stroomdijk/.env)
+      - STROOMDIJK_DEMO=${STROOMDIJK_DEMO:-0}
       - STROOMDIJK_HA_URL=http://host.docker.internal:8124
       - STROOMDIJK_GEHEIM=/run/geheim
       - STROOMDIJK_DATA=/data

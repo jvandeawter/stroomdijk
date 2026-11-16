@@ -171,6 +171,15 @@ Belangrijke les: Home Assistant 2026.11 zet de poort uit `configuration.yaml` ee
 
 **M4. Gevonden apparaten.** De pagina "Apparaten" toont de energieapparaten die `stroomdijk-ha` gevonden heeft, plus een knop om SolarEdge met de hand toe te voegen. De Anker staat erbij als "niet ondersteund". Klaar als: de lijst klopt met wat er in het netwerk staat.
 
+*Uitkomst M4 (2026-11-16): gedaan.* De pagina `/apparaten` en `/api/apparaten` laten zien:
+
+- **Gevonden:** alleen toegestane energie-integraties. In dit huis is dat de Enphase Envoy via zeroconf, op hetzelfde adres dat het eigen dashboard gebruikt. Printer, Hue, Sonos, Nest, Roborock en UniFi worden weggefilterd.
+- **Gekoppeld:** nog niets.
+- **Met de hand toevoegen:** SolarEdge.
+- **Nog niet mogelijk:** Anker Solarbank en Zonneplan Connect, met uitleg. Let op: dat is een vaste lijst in `integraties.json` (`_niet_ondersteund`). Home Assistant vindt apparaten zonder integratie niet, dus Stroomdijk kan ze ook niet echt "zien".
+
+De knoppen Koppelen en Toevoegen doen nog niets, dat komt in M5. De app draait nu standaard in de echte modus (`STROOMDIJK_DEMO=0`). Er zijn 36 tests en ze zijn allemaal groen.
+
 **M5. Koppelen en dashboard vullen.** Een koppel-wizard per apparaat: eerst de Envoy en daarna eventueel SolarEdge. Het net komt in dit huis pas als er een officieel uit te lezen P1-meter is. Na elke koppeling vallen de sensoren vanzelf in de rollen en verschijnen de tegels. Klaar als: het dashboard live de echte waarden toont, zonder handwerk en zonder dubbel tellen, en het eigen dashboard na elke koppeling gewoon doorloopt.
 
 **M6. Wifi instellen.** Container `stroomdijk-setup` met hotspot en instelpagina, getest op wlan0 terwijl de kabel de hoofdverbinding blijft. Daarvoor zet jij eenmalig wifi aan op de Pi (wifi-land en blokkade opheffen, met sudo). Klaar als: je met je telefoon via "Stroomdijk-xxxx" een wifi kunt kiezen, de Pi verbindt, en kabel, Tailscale, Bluetooth en het eigen dashboard ongestoord blijven. Daarna gaat de hotspot weer uit.
