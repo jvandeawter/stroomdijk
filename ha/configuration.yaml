@@ -1,0 +1,36 @@
+# Basisconfig voor de eigen Home Assistant van Stroomdijk (container stroomdijk-ha).
+#
+# Bewust geen default_config: die start ook go2rtc en Bluetooth. Op een Pi waar al
+# een andere Home Assistant draait, zouden die botsen (poorten van go2rtc, de
+# Bluetooth-chip). We laden alleen wat Stroomdijk nodig heeft.
+
+homeassistant:
+  name: Stroomdijk
+  unit_system: metric
+  currency: EUR
+  country: NL
+  time_zone: Europe/Amsterdam
+  language: nl
+
+http:
+  server_port: 8124
+
+# Website van Home Assistant (handig om mee te kijken) en inrichten via de API
+frontend:
+config:
+person:
+
+# Het netwerk afzoeken naar apparaten
+zeroconf:
+ssdp:
+dhcp:
+
+# Metingen bewaren voor later (grafieken)
+recorder:
+  purge_keep_days: 30
+history:
+logbook:
+energy:
+
+logger:
+  default: warning

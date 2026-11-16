@@ -23,3 +23,9 @@ De klikbare mockup in mockup/index.html (wifi, inrichten, apparaten, koppelen, d
 
 ## 2026-11-16: prototype 1 eerst alleen zon
 De P1-dongle in het testhuis is een Zonneplan Connect. Daarvoor is geen officiële lokale koppeling gevonden, alleen een onofficiële via de Zonneplan-cloud, en die gebruiken we niet. Prototype 1 koppelt daarom in dit huis eerst alleen zon (Enphase, eventueel SolarEdge). Hoe Stroomdijk bij klanten met zo'n leveranciersdongle aan P1-gegevens komt, is een open punt voor het product.
+
+## 2026-11-16: Stroomdijk richt zijn Home Assistant zelf in
+Stroomdijk doorloopt de onboarding van zijn eigen Home Assistant via de API, meteen na de eerste start. Niemand hoeft een token te maken. Waarom: een klant moet niets met Home Assistant hoeven doen, en een niet-ingerichte Home Assistant koppelt anders zelf apparaten (zoals Sonos en Bluetooth) zonder te vragen.
+
+## 2026-11-16: geen default_config in de Stroomdijk-HA
+De Stroomdijk-HA laadt alleen wat nodig is (frontend, config, zeroconf, ssdp, dhcp, recorder, history, energy). Waarom: default_config start ook go2rtc en Bluetooth, die botsen met een andere Home Assistant op dezelfde Pi.

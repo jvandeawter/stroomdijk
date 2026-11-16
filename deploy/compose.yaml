@@ -1,0 +1,20 @@
+# Stroomdijk op de Pi. Eigen compose-project, los van alles in ~/docker.
+# Starten:  cd ~/stroomdijk && docker compose up -d
+# Weghalen: cd ~/stroomdijk && docker compose down
+name: stroomdijk
+
+services:
+  stroomdijk-ha:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: stroomdijk-ha
+    restart: unless-stopped
+    # host-netwerk is nodig om het netwerk af te zoeken (mDNS, SSDP, DHCP)
+    network_mode: host
+    # geen /run/dbus en geen extra rechten: Bluetooth blijft bij de andere Home Assistant
+    cpus: 1.0
+    mem_limit: 1g   # let op: werkt alleen als de kernel geheugen-cgroups aan heeft
+    environment:
+      - TZ=Europe/Amsterdam
+    volumes:
+      - ./ha-config:/config
+      - /etc/localtime:/etc/localtime:ro

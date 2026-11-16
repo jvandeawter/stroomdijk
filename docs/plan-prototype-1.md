@@ -136,6 +136,14 @@ Elke mijlpaal is klein, werkt op zichzelf en wordt apart gecommit.
 
 **M1. Eigen Home Assistant naast de bestaande.** Container `stroomdijk-ha` op poort 8124 starten. Stroomdijk richt hem in via de onboarding-API (of jij doet dat eenmalig in de browser). Daarna een script dat via WebSocket laat zien wat hij in het netwerk gevonden heeft. Klaar als: we zien of de Envoy gevonden wordt, en de eigen Home Assistant, Bluetooth en het eigen dashboard ongestoord doordraaien.
 
+*Uitkomst M1 (2026-11-16): gedaan.* `stroomdijk-ha` draait op 8124 en is zonder browser ingericht via de onboarding-API (`scripts/inrichten.py`). Wachtwoord en token staan alleen in `~/stroomdijk/geheim/`. Via zeroconf vond hij vanzelf de Enphase Envoy, plus niet-energieapparaten zoals een printer, Hue, Sonos, Nest, Roborock en UniFi. Die moet Stroomdijk wegfilteren. Drie lessen:
+
+- **Direct inrichten:** zolang Home Assistant niet is ingericht, koppelt hij sommige gevonden apparaten automatisch (hier Sonos en de Bluetooth-chip). Stroomdijk moet hem dus meteen na de eerste start inrichten. De twee koppelingen zijn weggehaald met `scripts/opruimen.py`.
+- **Extra koppelingen:** het inrichten voegt zelf Shopping list, Radio Browser en Google Translate toe. Die kunnen er later uit.
+- **Geen geheugenlimiet:** die werkt op deze Pi niet, omdat de kernel met `cgroup_disable=memory` draait. `stroomdijk-ha` gebruikt zo'n 500 tot 600 MB.
+
+Het eigen dashboard (reactietijd ongeveer 1 ms, meter en omvormers verbonden) en de eigen Home Assistant (geen fouten) merkten er niets van.
+
 **M2. App-kern met tests op de Mac.** HA-client, inrichten, rollen en regels, getest tegen een nep-Home Assistant. Klaar als: `pytest` groen is zonder Pi.
 
 **M3. Ontwerp vastleggen en dashboard-skelet.** Het eigen dashboard alleen lezend bekijken en de stijl vastleggen in `docs/ontwerp-dashboard.md`. Daarna de app-container op 8090 met een dashboard in die stijl, gevuld met nepwaarden. Klaar als: je zegt dat het eruitziet zoals jouw dashboard.
