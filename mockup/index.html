@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stroomdijk mockup</title>
+<!-- Mockup van prototype 1: klikbare klantroute van wifi tot dashboard. Alle waarden zijn nep. -->
+<style>
+:root {
+  --bg: #f4f2ee; --card: #ffffff; --ink: #1d1d1b; --muted: #75716a; --line: #e4e0d8;
+  --sun: #d98a00; --batt: #1f8a5b; --home: #3a5bd9; --grid: #8a5a9e; --warn: #c0392b;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #151514; --card: #1f1f1d; --ink: #f1efe9; --muted: #9b968c; --line: #33322f;
+          --sun: #f0a830; --batt: #3cc184; --home: #7a93ff; --grid: #c08ad6; --warn: #ff6b5b; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+button { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 9px 14px; cursor: pointer; }
+button.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
+button.link { background: none; border: none; color: var(--muted); padding: 6px 0; text-decoration: underline; }
+button:disabled { opacity: .45; cursor: default; }
+input { font: inherit; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); }
+label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+.sub { color: var(--muted); font-size: 13px; }
+
+/* mockup-navigatie, hoort niet bij de app */
+.mocknav { position: sticky; top: 0; z-index: 10; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  padding: 8px 16px; background: color-mix(in srgb, var(--ink) 92%, transparent); color: var(--bg); font-size: 12px; }
+.mocknav b { margin-right: 6px; }
+.mocknav button { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 35%, transparent);
+  padding: 3px 9px; font-size: 12px; border-radius: 999px; }
+.mocknav button.on { background: var(--bg); color: var(--ink); }
+
+.screen { display: none; }
+.screen.on { display: block; }
+.narrow { max-width: 440px; margin: 0 auto; padding: 24px 16px 48px; }
+main.wide { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-top: 16px; }
+h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 15px; margin: 0 0 8px; }
+.brandrow { display: flex; align-items: center; gap: 10px; }
+.logo { width: 40px; height: 40px; flex: none; }
+.wordmark { font-weight: 700; font-size: 18px; letter-spacing: -.01em; }
+.addr { font-size: 12px; color: var(--muted); margin-top: 14px; padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; }
+
+.wifi { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.wifi:last-child { border-bottom: none; }
+.wifi.sel { font-weight: 600; }
+.bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 14px; }
+.bars i { width: 3px; background: var(--muted); border-radius: 1px; }
+.bars i.off { opacity: .25; }
+
+.steps { list-style: none; padding: 0; margin: 8px 0 0; }
+.steps li { display: flex; gap: 12px; align-items: center; padding: 10px 0; color: var(--muted); }
+.steps li.done, .steps li.busy { color: var(--ink); }
+.steps .ic { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); flex: none; display: grid; place-content: center; font-size: 12px; }
+.steps li.done .ic { background: var(--batt); border-color: var(--batt); color: #fff; }
+.steps li.busy .ic { border-color: var(--home); border-top-color: transparent; animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.dev { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.dev:last-child { border-bottom: none; }
+.dev .ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-content: center;
+  background: color-mix(in srgb, var(--c) 14%, var(--card)); color: var(--c); font-weight: 700; }
+.dev .nm { font-weight: 600; }
+.dev .ds { font-size: 12px; color: var(--muted); }
+.pill { font-size: 12px; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: color-mix(in srgb, var(--batt) 15%, transparent); color: var(--batt); font-weight: 600; }
+.pill.no { background: color-mix(in srgb, var(--muted) 15%, transparent); color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+.secure { display: flex; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 14px; padding: 10px 12px;
+  border-radius: 10px; background: color-mix(in srgb, var(--batt) 7%, transparent); }
+.actions { display: flex; gap: 10px; margin-top: 18px; align-items: center; justify-content: space-between; }
+
+/* dashboard, in de stijl van het eigen dashboard */
+header.banner { position: relative; overflow: hidden; min-height: 128px; padding: 18px 20px; border: 1px solid var(--line);
+  border-radius: 18px; background: color-mix(in srgb, var(--sun) 5%, var(--card)); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.banner .scene { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.banner .brand, .banner .status { position: relative; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--batt); margin-right: 6px; vertical-align: 1px; }
+.tabs { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.tabs button { padding: 7px 12px; }
+.tabs button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.flows { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.flow { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; border-top: 4px solid var(--c); }
+.flow .k { color: var(--muted); font-size: 13px; }
+.flow .v { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.flow .v small { font-size: 14px; font-weight: 500; color: var(--muted); }
+.flow .d { font-size: 12px; color: var(--muted); margin-top: 2px; min-height: 1.4em; }
+.panel { margin-top: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.gridauto { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.ph { border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.ph .k { color: var(--muted); font-size: 12px; font-weight: 600; }
+.ph .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ph .v small { font-size: 13px; color: var(--muted); font-weight: 500; }
+.ph .d { font-size: 12px; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 8px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--c); border-radius: 3px; transition: width .6s; }
+.empty { margin-top: 16px; border: 1px dashed var(--line); border-radius: 16px; padding: 16px; display: flex;
+  justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+@media (max-width: 600px) { .grid3 { grid-template-columns: 1fr; } header.banner h1 { font-size: 19px; } }
+</style>
+</head>
+<body>
+
+<nav class="mocknav" aria-label="Mockup-navigatie">
+  <b>Mockup</b>
+  <button data-go="wifi">1 Wifi</button>
+  <button data-go="inrichten">2 Inrichten</button>
+  <button data-go="apparaten">3 Apparaten</button>
+  <button data-go="koppelen">4 Koppelen</button>
+  <button data-go="dashboard">5 Dashboard</button>
+</nav>
+
+<!-- 1. Wifi via de hotspot van het kastje -->
+<section class="screen narrow" id="wifi">
+  <div class="brandrow">
+    <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="40" cy="22" r="10" style="fill:var(--sun)"/>
+      <path d="M6 48 C20 40 34 38 58 42" fill="none" style="stroke:var(--batt)" stroke-width="4" stroke-linecap="round"/>
+      <path d="M6 56 C22 50 36 48 58 51" fill="none" style="stroke:var(--home)" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+    </svg>
+    <span class="wordmark">Stroomdijk</span>
+  </div>
+  <div class="addr">Je bent verbonden met <b>Stroomdijk-4F2A</b> · 10.42.0.1</div>
+  <div class="card">
+    <h1>Welkom! Eerst de wifi</h1>
+    <p class="sub">Kies het wifi-netwerk van je huis. Stroomdijk gebruikt het alleen om je apparaten te vinden. Je gegevens blijven in het kastje.</p>
+    <div id="wifilist"></div>
+    <label for="wpw">Wachtwoord van de wifi</label>
+    <input id="wpw" type="password" placeholder="Wachtwoord">
+    <div class="actions">
+      <button class="link" type="button">Ander netwerk</button>
+      <button class="primary" id="wifiGo" disabled>Verbinden</button>
+    </div>
+  </div>
+  <p class="note">Liever een kabel? Steek een netwerkkabel in het kastje, dan slaat Stroomdijk deze stap over.</p>
+</section>
+
+<!-- 2. Kastje richt zichzelf in -->
+<section class="screen narrow" id="inrichten">
+  <div class="brandrow"><span class="wordmark">Stroomdijk</span></div>
+  <div class="card">
+    <h1>Even geduld</h1>
+    <p class="sub">Stroomdijk zet alles voor je klaar. Dit duurt een paar minuten. Je hoeft niets te doen.</p>
+    <ul class="steps" id="steps">
+      <li><span class="ic"></span>Verbinden met <span class="wnm">&nbsp;je wifi</span></li>
+      <li><span class="ic"></span>Stroomdijk klaarzetten</li>
+      <li><span class="ic"></span>Je netwerk afzoeken naar energieapparaten</li>
+    </ul>
+    <div class="actions" style="justify-content:flex-end">
+      <button class="primary" id="stepsGo" disabled>Bekijk wat we vonden</button>
+    </div>
+  </div>
+  <p class="note">Je telefoon wisselt straks vanzelf terug naar je eigen wifi. Daarna vind je Stroomdijk op <b>stroomdijk.local</b>.</p>
+</section>
+
+<!-- 3. Gevonden apparaten -->
+<section class="screen narrow" id="apparaten">
+  <div class="brandrow"><span class="wordmark">Stroomdijk</span></div>
+  <div class="card">
+    <h1>Dit vonden we in je huis</h1>
+    <p class="sub">Koppel wat je wilt zien. Je kunt later altijd meer toevoegen.</p>
+    <div id="devlist"></div>
+  </div>
+  <div class="card">
+    <h2>Mis je iets?</h2>
+    <p class="sub" style="margin:0 0 12px">Sommige apparaten zitten niet in je netwerk maar in de cloud van de fabrikant, zoals SolarEdge.</p>
+    <button data-add="solaredge">+ SolarEdge toevoegen</button>
+  </div>
+  <div class="actions"><span></span><button class="primary" id="toDash">Naar mijn dashboard</button></div>
+</section>
+
+<!-- 4. Koppelen (inhoud wisselt per apparaat) -->
+<section class="screen narrow" id="koppelen">
+  <div class="brandrow"><span class="wordmark">Stroomdijk</span></div>
+  <div class="card" id="pairCard"></div>
+</section>
+
+<!-- 5. Dashboard -->
+<section class="screen" id="dashboard">
+<main class="wide">
+  <header class="banner">
+    <svg class="scene" viewBox="0 0 680 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <circle cx="560" cy="58" r="30" style="fill:var(--sun)" opacity=".18"/>
+      <path d="M0 128 C120 118 220 104 330 100 C450 96 560 110 680 118 V150 H0Z" style="fill:var(--batt)" opacity=".10"/>
+      <path d="M0 128 C120 118 220 104 330 100 C450 96 560 110 680 118" fill="none" style="stroke:var(--batt)" stroke-width="1.5" opacity=".35"/>
+      <g fill="none" style="stroke:var(--muted)" stroke-width="1.5" opacity=".5" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M410 100 432 82 454 100"/><path d="M414 97v4h36v-4"/>
+        <path d="M418 90 432 79 446 90" style="stroke:var(--home)"/>
+        <path d="M300 104v-24M296 104h8"/><path d="M316 103v-18M312 103h8"/>
+      </g>
+    </svg>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="40" cy="22" r="10" style="fill:var(--sun)"/>
+        <path d="M6 48 C20 40 34 38 58 42" fill="none" style="stroke:var(--batt)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M6 56 C22 50 36 48 58 51" fill="none" style="stroke:var(--home)" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+      </svg>
+      <div>
+        <h1>Mijn huis</h1>
+        <div class="sub" id="bsub">Zon en net</div>
+        <div class="sub" style="margin-top:6px"><span class="dot"></span>Bijgewerkt <span id="upd">nu</span></div>
+      </div>
+    </div>
+    <div class="status sub">Stroomdijk</div>
+  </header>
+
+  <div class="tabs">
+    <button class="on">Energie</button>
+    <button data-go="apparaten">Apparaten</button>
+  </div>
+
+  <div class="flows" id="flows"></div>
+  <div id="panels"></div>
+  <div id="missing"></div>
+</main>
+</section>
+
+<script>
+// ---------- toestand van de mockup ----------
+const S = {
+  wifi: null,
+  coupled: { p1: false, enphase: false, solaredge: false },
+  pairing: null,
+};
+const WIFI = [["Thuisnetwerk", 4], ["Thuisnetwerk-5G", 3], ["Buren-wifi", 2], ["Gast", 1]];
+const DEVICES = [
+  { id: "p1", nm: "P1-meter", ds: "Slimme meter · gevonden op je netwerk", c: "var(--grid)", ic: "P1" },
+  { id: "enphase", nm: "Enphase Envoy", ds: "Zonnepanelen · gevonden op je netwerk", c: "var(--sun)", ic: "☀" },
+  { id: "solaredge", nm: "SolarEdge", ds: "Zonnepanelen · via de cloud", c: "var(--sun)", ic: "☀", manual: true },
+  { id: "anker", nm: "Anker Solarbank", ds: "Thuisbatterij · gevonden op je netwerk", c: "var(--batt)", ic: "▮", unsupported: true },
+];
+
+// ---------- schermwissel ----------
+function go(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+  document.querySelectorAll(".mocknav button").forEach(b => b.classList.toggle("on", b.dataset.go === id));
+  if (id === "inrichten") runSteps();
+  if (id === "apparaten") renderDevices();
+  if (id === "koppelen") renderPair();
+  if (id === "dashboard") renderDash();
+  window.scrollTo(0, 0);
+}
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g) go(g.dataset.go);
+  const a = e.target.closest("[data-add]"); if (a) { S.pairing = a.dataset.add; go("koppelen"); }
+  const p = e.target.closest("[data-pair]"); if (p) {
+    S.pairing = p.dataset.pair; go("koppelen");
+  }
+});
+
+// ---------- 1. wifi ----------
+const wl = document.getElementById("wifilist");
+wl.innerHTML = WIFI.map(([n, s]) => `<div class="wifi" data-w="${n}"><span>${n}</span>
+  <span class="bars">${[1,2,3,4].map(i => `<i style="height:${i*3+2}px" class="${i > s ? "off" : ""}"></i>`).join("")}</span></div>`).join("");
+wl.addEventListener("click", e => {
+  const w = e.target.closest(".wifi"); if (!w) return;
+  S.wifi = w.dataset.w;
+  wl.querySelectorAll(".wifi").forEach(x => x.classList.toggle("sel", x === w));
+  document.getElementById("wifiGo").disabled = false;
+});
+document.getElementById("wifiGo").onclick = () => go("inrichten");
+
+// ---------- 2. inrichten ----------
+let stepTimer;
+function runSteps() {
+  clearTimeout(stepTimer);
+  document.querySelector(".wnm").textContent = " " + (S.wifi || "je wifi");
+  const li = [...document.querySelectorAll("#steps li")];
+  const btn = document.getElementById("stepsGo"); btn.disabled = true;
+  li.forEach(l => { l.className = ""; l.querySelector(".ic").textContent = ""; });
+  let i = 0;
+  const next = () => {
+    if (i > 0) { li[i-1].className = "done"; li[i-1].querySelector(".ic").textContent = "✓"; }
+    if (i < li.length) { li[i].className = "busy"; i++; stepTimer = setTimeout(next, 1100); }
+    else btn.disabled = false;
+  };
+  next();
+}
+document.getElementById("stepsGo").onclick = () => go("apparaten");
+
+// ---------- 3. apparaten ----------
+function renderDevices() {
+  document.getElementById("devlist").innerHTML = DEVICES.filter(d => !d.manual || S.coupled[d.id]).map(d => {
+    let right;
+    if (d.unsupported) right = `<span class="pill no">Nog niet mogelijk</span>`;
+    else if (S.coupled[d.id]) right = `<span class="pill ok">Gekoppeld</span>`;
+    else right = `<button data-pair="${d.id}">Koppelen</button>`;
+    const extra = d.unsupported ? `<div class="ds">Hiervoor is nog geen officiële koppeling. We laten het je weten zodra het kan.</div>` : "";
+    return `<div class="dev" style="--c:${d.c}"><div class="ico">${d.ic}</div>
+      <div><div class="nm">${d.nm}</div><div class="ds">${d.ds}</div>${extra}</div>${right}</div>`;
+  }).join("");
+}
+document.getElementById("toDash").onclick = () => go("dashboard");
+
+// ---------- 4. koppelen ----------
+const PAIR = {
+  p1: { t: "P1-meter koppelen", body: `
+      <p class="sub">We vonden een P1-meter op je netwerk. Klopt het dat dit de meter van jouw huis is?</p>
+      <div class="secure">🔒 Stroomdijk leest de meter alleen lokaal uit. Er gaat niets naar de cloud.</div>` },
+  enphase: { t: "Enphase Envoy koppelen", body: `
+      <p class="sub">Om je zonnepanelen uit te lezen heeft de Envoy je Enphase-account nodig, hetzelfde als in de Enphase-app.</p>
+      <label>E-mailadres van je Enphase-account</label><input type="email" placeholder="naam@voorbeeld.nl">
+      <label>Wachtwoord</label><input type="password" placeholder="Wachtwoord">
+      <div class="secure">🔒 Je gegevens blijven in het kastje. Daarna praat Stroomdijk rechtstreeks met de Envoy in je huis.</div>` },
+  solaredge: { t: "SolarEdge toevoegen", body: `
+      <p class="sub">SolarEdge werkt via de cloud. Je vindt beide gegevens in de SolarEdge-monitoringsite.</p>
+      <label>Site-ID</label><input inputmode="numeric" placeholder="bijv. 1234567">
+      <label>API-sleutel</label><input placeholder="API-sleutel">
+      <div class="secure">ℹ️ De cloud van SolarEdge ververst minder vaak, dus deze waarden lopen iets achter.</div>` },
+};
+function renderPair() {
+  const id = S.pairing || "enphase"; S.pairing = id;
+  const p = PAIR[id];
+  document.getElementById("pairCard").innerHTML = `<h1>${p.t}</h1>${p.body}
+    <div class="actions"><button class="link" data-go="apparaten">Terug</button>
+    <button class="primary" id="pairGo">${id === "p1" ? "Ja, koppelen" : "Koppelen"}</button></div>`;
+  document.getElementById("pairGo").onclick = () => {
+    const b = document.getElementById("pairGo"); b.disabled = true; b.textContent = "Bezig met koppelen…";
+    setTimeout(() => { S.coupled[id] = true; go("apparaten"); }, 900);
+  };
+}
+
+// ---------- 5. dashboard (nepwaarden die licht bewegen) ----------
+let t0 = Date.now();
+function sim() {
+  const t = (Date.now() - t0) / 1000;
+  const w = (base, amp, f) => Math.max(0, Math.round(base + amp * Math.sin(t / f)));
+  const enph = S.coupled.enphase ? w(1380, 60, 7) : 0;
+  const sed = S.coupled.solaredge ? 770 : 0;            // cloud, verandert traag
+  const house = w(940, 160, 3.3);
+  const grid = house - enph - sed;                      // + afname, - teruglevering
+  const sp = [0.36, 0.31, 0.33];
+  return { enph, sed, sun: enph + sed, house, grid,
+    ph: sp.map((s, i) => Math.round(grid * s + (i - 1) * 90)), v: [231.2, 229.8, 230.6] };
+}
+const fmtW = w => Math.abs(w) >= 1000 ? [(Math.abs(w)/1000).toFixed(2).replace(".", ","), "kW"] : [Math.abs(w), "W"];
+function tile(k, v, d, c) { const [n, u] = fmtW(v);
+  return `<div class="flow" style="--c:${c}"><div class="k">${k}</div><div class="v">${n} <small>${u}</small></div><div class="d">${d}</div></div>`; }
+
+function renderDash() {
+  const c = S.coupled, d = sim();
+  const hasSun = c.enphase || c.solaredge;
+  const tiles = [];
+  if (hasSun) tiles.push(tile("Zonne-opwek", d.sun,
+    [c.enphase && `Enphase ${d.enph} W`, c.solaredge && `SolarEdge ${d.sed} W`].filter(Boolean).join(" · "), "var(--sun)"));
+  if (c.p1 && hasSun) tiles.push(tile("Huisverbruik", d.house, "zon + net", "var(--home)"));
+  if (c.p1) tiles.push(tile("Stroomnet (slimme meter)", d.grid, d.grid >= 0 ? "afname van net" : "teruglevering aan net", "var(--grid)"));
+  document.getElementById("flows").innerHTML = tiles.join("");
+  document.getElementById("bsub").textContent = [hasSun && "Zon", c.p1 && "net"].filter(Boolean).join(" en ").replace(/^n/, "N") || "Nog niets gekoppeld";
+
+  let panels = "";
+  if (hasSun) {
+    const max = 3000;
+    const src = [c.enphase && ["Enphase", d.enph, "lokaal · elke paar seconden"], c.solaredge && ["SolarEdge", d.sed, "via de cloud · loopt iets achter"]].filter(Boolean);
+    panels += `<div class="panel"><h2>Zonnepanelen per omvormer</h2><div class="gridauto">${src.map(([n, v, x]) => `
+      <div class="ph" style="--c:var(--sun)"><div class="k">${n}</div><div class="v">${v} <small>W</small></div><div class="d">${x}</div>
+      <div class="bar"><i style="width:${Math.min(100, v / max * 100)}%"></i></div></div>`).join("")}</div></div>`;
+  }
+  if (c.p1) {
+    panels += `<div class="panel"><h2>Stroomnet per fase · P1-meter</h2><div class="grid3">${d.ph.map((p, i) => `
+      <div class="ph"><div class="k">L${i+1}</div><div class="v">${p} <small>W</small></div><div class="d">${d.v[i].toFixed(1).replace(".", ",")} V · ${p >= 0 ? "afname" : "teruglevering"}</div></div>`).join("")}</div></div>`;
+  }
+  document.getElementById("panels").innerHTML = panels;
+
+  const todo = DEVICES.filter(x => !x.unsupported && !c[x.id]).map(x => x.nm);
+  document.getElementById("missing").innerHTML = todo.length ? `<div class="empty">
+      <span>${tiles.length ? "Nog niet gekoppeld" : "Je dashboard is nog leeg. Koppel een apparaat om te beginnen"}: ${todo.join(", ")}</span>
+      <button data-go="apparaten">Apparaat koppelen</button></div>` : "";
+  document.getElementById("upd").textContent = new Date().toLocaleTimeString("nl-NL");
+}
+setInterval(() => { if (document.getElementById("dashboard").classList.contains("on")) renderDash(); }, 2000);
+
+go("wifi");
+</script>
+</body>
+</html>
