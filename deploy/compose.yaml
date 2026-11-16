@@ -43,3 +43,21 @@ services:
       - ./data:/data
     depends_on:
       - stroomdijk-ha
+
+  # Wifi instellen via een eigen hotspot. Start NIET vanzelf: alleen met --profile setup.
+  # Testen: STROOMDIJK_SETUP_TEST=1 docker compose --profile setup up -d --build stroomdijk-setup
+  # Stoppen: docker compose --profile setup stop stroomdijk-setup  (zet de hotspot uit)
+  stroomdijk-setup:
+    build: ./setup
+    image: stroomdijk-setup:dev
+    container_name: stroomdijk-setup
+    profiles: ["setup"]
+    restart: "no"
+    network_mode: host
+    cpus: 0.5
+    environment:
+      - TZ=Europe/Amsterdam
+      - STROOMDIJK_SETUP_TEST=${STROOMDIJK_SETUP_TEST:-0}
+      - STROOMDIJK_WIFI=wlan0
+    volumes:
+      - /run/dbus:/run/dbus:ro

@@ -1,0 +1,12 @@
+# Stroomdijk-setup: wifi instellen via een eigen hotspot. Gebouwd op de Pi vanuit ~/stroomdijk/setup.
+# Draait als root op het host-netwerk en praat via D-Bus met NetworkManager; anders mag hij
+# geen hotspot maken. Hij raakt alleen verbindingen aan die met 'stroomdijk-' beginnen.
+FROM python:3.13-slim
+
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /app
+COPY pyproject.toml ./
+COPY stroomdijk_setup ./stroomdijk_setup
+RUN pip install --no-cache-dir . && rm -rf /app/build
+EXPOSE 8091
+CMD ["python", "-m", "stroomdijk_setup"]

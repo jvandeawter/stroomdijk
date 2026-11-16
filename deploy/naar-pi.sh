@@ -13,6 +13,9 @@ rsync -a "$HERE/deploy/compose.yaml" "$HOST:stroomdijk/compose.yaml"
 $SYNC "$HERE/scripts/" "$HOST:stroomdijk/scripts/"
 $SYNC "$HERE/app/" "$HOST:stroomdijk/app/"
 rsync -a "$HERE/deploy/Dockerfile.app" "$HOST:stroomdijk/app/Dockerfile"
+ssh "$HOST" 'mkdir -p ~/stroomdijk/setup'
+$SYNC "$HERE/setup/" "$HOST:stroomdijk/setup/"
+rsync -a "$HERE/deploy/Dockerfile.setup" "$HOST:stroomdijk/setup/Dockerfile"
 # configuration.yaml mag de container zelf niet overschrijven; wij zijn de baas over dit ene bestand
 rsync -a "$HERE/ha/configuration.yaml" "$HOST:stroomdijk/ha-config/configuration.yaml"
 

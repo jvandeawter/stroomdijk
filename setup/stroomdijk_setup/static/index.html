@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stroomdijk instellen</title>
+<style>
+:root { --bg: #f4f2ee; --card: #ffffff; --ink: #1d1d1b; --muted: #75716a; --line: #e4e0d8;
+  --sun: #d98a00; --batt: #1f8a5b; --home: #3a5bd9; --warn: #c0392b; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #151514; --card: #1f1f1d; --ink: #f1efe9; --muted: #9b968c; --line: #33322f;
+          --sun: #f0a830; --batt: #3cc184; --home: #7a93ff; --warn: #ff6b5b; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 440px; margin: 0 auto; padding: 24px 16px 48px; }
+.merk { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+.merk svg { width: 40px; height: 40px; }
+.adres { font-size: 12px; color: var(--muted); margin-top: 14px; padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; }
+.kaart { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; margin-top: 16px; }
+h1 { font-size: 22px; margin: 0 0 6px; }
+.sub { color: var(--muted); font-size: 13px; }
+.wifi { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.wifi:last-child { border-bottom: none; }
+.wifi.sel { font-weight: 600; }
+.bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 14px; margin-left: 8px; }
+.bars i { width: 3px; background: var(--muted); border-radius: 1px; }
+.bars i.off { opacity: .25; }
+label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 4px; }
+input { font: inherit; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+button { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 9px 14px; cursor: pointer; }
+button.primair { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
+button.link { background: none; border: none; color: var(--muted); padding: 6px 0; text-decoration: underline; }
+button:disabled { opacity: .45; cursor: default; }
+.acties { display: flex; gap: 10px; margin-top: 18px; align-items: center; justify-content: space-between; }
+.err { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--warn) 12%, transparent); color: var(--warn); font-size: 13px; }
+.note { font-size: 13px; color: var(--muted); margin-top: 14px; }
+.test { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--sun); border: 1px solid var(--sun); border-radius: 999px; padding: 1px 8px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="merk">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="40" cy="22" r="10" style="fill:var(--sun)"/>
+      <path d="M6 48 C20 40 34 38 58 42" fill="none" style="stroke:var(--batt)" stroke-width="4" stroke-linecap="round"/>
+      <path d="M6 56 C22 50 36 48 58 51" fill="none" style="stroke:var(--home)" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+    </svg>
+    Stroomdijk <span class="test" id="test" hidden>test</span>
+  </div>
+  <div class="adres" id="adres">Verbinden met het kastje…</div>
+  <div class="kaart" id="kaart"><div class="sub">Even geduld…</div></div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let gekozen = null, handmatig = false, bezig = false, laatst = "";
+
+function balkjes(sterkte) {
+  const n = Math.max(1, Math.round(sterkte / 25));
+  return `<span class="bars">${[1,2,3,4].map(i => `<i style="height:${i*3+2}px" class="${i > n ? "off" : ""}"></i>`).join("")}</span>`;
+}
+
+function formulier(s) {
+  const lijst = s.netwerken.map(n => `<div class="wifi ${n.ssid === gekozen ? "sel" : ""}" data-ssid="${esc(n.ssid)}">
+      <span>${esc(n.ssid)}${n.beveiligd ? "" : ` <span class="sub">(open)</span>`}</span>${balkjes(n.sterkte)}</div>`).join("")
+    || `<div class="sub">Geen netwerken gevonden. Vul de naam hieronder zelf in.</div>`;
+  $("kaart").innerHTML = `<h1>Welkom! Eerst de wifi</h1>
+    <p class="sub">Kies het wifi-netwerk van je huis. Stroomdijk gebruikt het om je apparaten te vinden. Je gegevens blijven in het kastje.</p>
+    ${s.toestand === "mislukt" ? `<div class="err">${esc(s.melding)}</div>` : ""}
+    <div id="lijst" ${handmatig ? "hidden" : ""}>${lijst}</div>
+    <div ${handmatig ? "" : "hidden"}><label for="ssid">Naam van het netwerk</label><input id="ssid" autocomplete="off"></div>
+    <label for="ww">Wachtwoord van de wifi</label><input id="ww" type="password" autocomplete="current-password" placeholder="Wachtwoord">
+    <div class="acties"><button class="link" id="ander">${handmatig ? "Terug naar de lijst" : "Ander netwerk"}</button>
+      <button class="primair" id="go">Verbinden</button></div>`;
+  $("lijst").onclick = e => { const w = e.target.closest(".wifi"); if (!w) return; gekozen = w.dataset.ssid;
+    document.querySelectorAll(".wifi").forEach(x => x.classList.toggle("sel", x === w)); };
+  $("ander").onclick = () => { handmatig = !handmatig; formulier(s); };
+  $("go").onclick = verbind;
+}
+
+async function verbind() {
+  const ssid = handmatig ? $("ssid").value.trim() : gekozen;
+  if (!ssid) { alert("Kies eerst een netwerk."); return; }
+  bezig = true;
+  const ww = $("ww").value;
+  $("go").disabled = true; $("go").textContent = "Bezig…";
+  const r = await fetch("/api/verbind", { method: "POST", headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify({ ssid, wachtwoord: ww }) }).catch(() => null);
+  if (r && !r.ok) { const d = await r.json().catch(() => ({})); alert(d.fout || "Dat lukte niet."); bezig = false; return; }
+  $("kaart").innerHTML = `<h1>Verbinden met ${esc(ssid)}…</h1>
+    <p class="sub">Het kastje zet nu zijn eigen wifi uit en maakt verbinding met jouw netwerk. Je telefoon verliest daardoor de verbinding met Stroomdijk. Dat hoort zo.</p>
+    <p class="sub">Ga op je telefoon terug naar je eigen wifi en open over een minuutje <b>stroomdijk.local:8090</b>.</p>
+    <p class="note">Zie je het netwerk <b>${esc(laatst)}</b> over een minuut weer verschijnen? Dan lukte het verbinden niet. Verbind er opnieuw mee en probeer het nog eens.</p>`;
+}
+
+function teken(s) {
+  $("test").hidden = !s.testmodus;
+  laatst = s.hotspot;
+  $("adres").innerHTML = s.hotspot ? `Kastje <b>${esc(s.hotspot)}</b>` : "";
+  if (bezig) return;
+  if (s.toestand === "hotspot" || s.toestand === "mislukt") { if (!$("lijst")) formulier(s); return; }
+  const tekst = {
+    start: ["Even geduld", "Het kastje start op."],
+    klaar: ["Er is al netwerk", "Dit kastje is al verbonden. Je vindt Stroomdijk op stroomdijk.local:8090."],
+    verbinden: ["Bezig met verbinden", "Het kastje maakt verbinding met je wifi."],
+    verbonden: ["Verbonden", s.melding],
+    wifi_uit: ["Wifi staat uit", "Op dit kastje staat de wifi uit. Gebruik een netwerkkabel."],
+    gestopt: ["Gestopt", "De instelhotspot staat uit."],
+    fout: ["Er ging iets mis", s.melding],
+  }[s.toestand] || [s.toestand, s.melding];
+  $("kaart").innerHTML = `<h1>${esc(tekst[0])}</h1><p class="sub">${esc(tekst[1])}</p>`;
+}
+
+async function ververs() {
+  try { teken(await (await fetch("/api/status")).json()); } catch (e) {}
+}
+ververs();
+setInterval(ververs, 3000);
+</script>
+</body>
+</html>
