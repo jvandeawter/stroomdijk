@@ -146,6 +146,16 @@ Het eigen dashboard (reactietijd ongeveer 1 ms, meter en omvormers verbonden) en
 
 **M2. App-kern met tests op de Mac.** HA-client, inrichten, rollen en regels, getest tegen een nep-Home Assistant. Klaar als: `pytest` groen is zonder Pi.
 
+*Uitkomst M2 (2026-11-16): gedaan.* De kern staat in `app/stroomdijk/`:
+
+- `ha_client.py`: WebSocket en REST, opnieuw verbinden met oplopende wachttijd, abonnementen herstellen.
+- `inrichten.py`: Home Assistant inrichten zonder browser.
+- `ontdekken.py` en `koppelen.py`: gevonden apparaten filteren, config flows doorlopen, alleen eigen koppelingen verwijderen.
+- `rollen.py` en `huis.py`: sensoren naar rollen, live overzicht met omrekening van eenheden.
+- `integraties.json`: de toegestane integraties en hun regels.
+
+Er zijn 24 tests tegen een nep-Home Assistant (`app/tests/nep_ha.py`) en ze zijn allemaal groen. Draaien op de Mac: `cd app && ../.venv/bin/python -m pytest`. Let op: de sleutels in `integraties.json` (translation_key en unique_id) zijn nog niet met echte apparaten gecontroleerd (`geverifieerd: false`). Dat doen we in M5 met de echte Envoy.
+
 **M3. Ontwerp vastleggen en dashboard-skelet.** Het eigen dashboard alleen lezend bekijken en de stijl vastleggen in `docs/ontwerp-dashboard.md`. Daarna de app-container op 8090 met een dashboard in die stijl, gevuld met nepwaarden. Klaar als: je zegt dat het eruitziet zoals jouw dashboard.
 
 **M4. Gevonden apparaten.** De pagina "Apparaten" toont de energieapparaten die `stroomdijk-ha` gevonden heeft, plus een knop om SolarEdge met de hand toe te voegen. De Anker staat erbij als "niet ondersteund". Klaar als: de lijst klopt met wat er in het netwerk staat.

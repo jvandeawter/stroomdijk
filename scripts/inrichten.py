@@ -26,7 +26,7 @@ def bewaar(naam, waarde):
     pad = os.path.join(GEHEIM, naam)
     fd = os.open(pad, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w") as f:
-        f.write(waarde)
+        f.write(waarde + "\n")
     os.chown(pad, EIGENAAR_UID, EIGENAAR_UID)
 
 

@@ -1,0 +1,47 @@
+{
+  "_uitleg": "Toegestane energie-integraties en hun rolregels. Alleen officiële of lokale Home Assistant-integraties. 'geverifieerd' staat op false zolang de sleutels niet met een echt apparaat zijn gecontroleerd. Een regel past als device_class gelijk is (uit de state) en de translation_key in 'sleutel' staat of 'bevat' voorkomt in translation_key of unique_id.",
+  "enphase_envoy": {
+    "naam": "Enphase Envoy",
+    "label": "Enphase",
+    "soort": "zon",
+    "omschrijving": "Zonnepanelen",
+    "verbinding": "lokaal",
+    "geverifieerd": false,
+    "rollen": [
+      {"rol": "zon_vermogen", "device_class": "power", "sleutel": ["current_power_production"]},
+      {"rol": "zon_vandaag", "device_class": "energy", "sleutel": ["daily_production", "energy_production_today"]}
+    ]
+  },
+  "solaredge": {
+    "naam": "SolarEdge",
+    "label": "SolarEdge",
+    "soort": "zon",
+    "omschrijving": "Zonnepanelen",
+    "verbinding": "cloud",
+    "handmatig": true,
+    "geverifieerd": false,
+    "rollen": [
+      {"rol": "zon_vermogen", "device_class": "power", "sleutel": ["current_power"]},
+      {"rol": "zon_vandaag", "device_class": "energy", "sleutel": ["energy_today"]}
+    ]
+  },
+  "homewizard": {
+    "naam": "HomeWizard",
+    "label": "P1-meter",
+    "soort": "net",
+    "omschrijving": "Slimme meter",
+    "verbinding": "lokaal",
+    "geverifieerd": false,
+    "rollen": [
+      {"rol": "net_fase_l1", "device_class": "power", "bevat": ["active_power_l1"]},
+      {"rol": "net_fase_l2", "device_class": "power", "bevat": ["active_power_l2"]},
+      {"rol": "net_fase_l3", "device_class": "power", "bevat": ["active_power_l3"]},
+      {"rol": "net_vermogen", "device_class": "power", "sleutel": ["active_power_w"]},
+      {"rol": "spanning_l1", "device_class": "voltage", "bevat": ["voltage_l1"]},
+      {"rol": "spanning_l2", "device_class": "voltage", "bevat": ["voltage_l2"]},
+      {"rol": "spanning_l3", "device_class": "voltage", "bevat": ["voltage_l3"]},
+      {"rol": "net_afname_totaal", "device_class": "energy", "sleutel": ["total_energy_import_kwh"]},
+      {"rol": "net_teruglevering_totaal", "device_class": "energy", "sleutel": ["total_energy_export_kwh"]}
+    ]
+  }
+}
