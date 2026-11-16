@@ -17,3 +17,6 @@ Stroomdijk krijgt een eigen Home Assistant (container stroomdijk-ha, poort 8124,
 
 ## 2026-11-16: dashboard in de stijl van het eigen dashboard
 Het Stroomdijk-dashboard krijgt de look en indeling van het eigen dashboard, maar wordt opnieuw gebouwd in deze repo, zonder code te kopiëren. Waarom: het eigen dashboard is huis-specifiek, het product moet werken met elke combinatie van apparaten.
+
+## 2026-11-16: mockup goedgekeurd
+De klikbare mockup in mockup/index.html (wifi, inrichten, apparaten, koppelen, dashboard) is akkoord en is de richting voor de schermen van prototype 1. Waarom: zo bouwen we naar een beeld dat al is goedgekeurd.
