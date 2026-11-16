@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Koppelen · Stroomdijk</title>
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/stijl.css">
+</head>
+<body>
+<main class="smal">
+  <nav class="tabs" style="margin-top:0">
+    <a href="/">Energie</a>
+    <a href="/apparaten" class="on">Apparaten</a>
+  </nav>
+  <div class="kaart" id="kaart"><div class="sub">Even geduld…</div></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const q = new URLSearchParams(location.search);
+const integratie = q.get("integratie") || "";
+const NAMEN = { enphase_envoy: "Enphase Envoy", solaredge: "SolarEdge", homewizard: "P1-meter" };
+const UITLEG = {
+  enphase_envoy: "Om je zonnepanelen uit te lezen heeft de Envoy je Enphase-account nodig, hetzelfde als in de Enphase-app.",
+  solaredge: "SolarEdge werkt via de cloud. Je vindt het site-ID en de API-sleutel in de SolarEdge-monitoringsite.",
+};
+const VEILIG = {
+  solaredge: "ℹ️ Je gegevens blijven in het kastje. De cloud van SolarEdge ververst minder vaak, dus deze waarden lopen iets achter.",
+};
+const naam = NAMEN[integratie] || integratie;
+let flow = q.get("flow") || "";
+
+async function api(methode, pad, body) {
+  const r = await fetch(pad, { method: methode, headers: { "Content-Type": "application/json" },
+                               body: body ? JSON.stringify(body) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.fout || `fout ${r.status}`);
+  return d;
+}
+
+function veld(v) {
+  const id = "v_" + v.naam;
+  const std = v.standaard == null ? "" : esc(v.standaard);
+  const verplicht = v.verplicht ? "required" : "";
+  if (v.soort === "vinkje")
+    return `<label class="vink"><input type="checkbox" id="${id}" ${v.standaard ? "checked" : ""}> ${esc(v.label)}</label>`;
+  if (v.soort === "keuze")
+    return `<label for="${id}">${esc(v.label)}</label><select id="${id}" ${verplicht}>${v.opties.map(o =>
+      `<option ${String(o) === String(v.standaard) ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+  const type = v.soort === "wachtwoord" ? "password" : v.soort === "getal" ? "number" : "text";
+  const auto = v.soort === "wachtwoord" ? "current-password" : v.naam.includes("user") || v.naam.includes("mail") ? "username" : "off";
+  return `<label for="${id}">${esc(v.label)}${v.verplicht ? "" : " <span class=sub>(niet verplicht)</span>"}</label>
+          <input id="${id}" type="${type}" value="${std}" autocomplete="${auto}" ${verplicht}>`;
+}
+
+function lees(velden) {
+  const uit = {};
+  for (const v of velden) {
+    const el = $("v_" + v.naam);
+    if (v.soort === "vinkje") uit[v.naam] = el.checked;
+    else if (v.soort === "getal") { if (el.value !== "") uit[v.naam] = Number(el.value); }
+    else if (el.value !== "" || v.verplicht) uit[v.naam] = el.value;
+  }
+  return uit;
+}
+
+function toon(stap) {
+  if (stap.flow_id) flow = stap.flow_id;
+  if (stap.soort === "klaar") {
+    $("kaart").innerHTML = `<div class="gelukt"><div class="vinkje">✓</div><h2>${esc(naam)} is gekoppeld</h2>
+      <p class="sub">Je dashboard vult zich nu vanzelf met de gegevens.</p>
+      <div class="acties" style="justify-content:center"><a class="knop" href="/apparaten">Nog iets koppelen</a>
+      <a class="knop primair" href="/">Naar mijn dashboard</a></div></div>`;
+    return;
+  }
+  if (stap.soort === "afgebroken") {
+    $("kaart").innerHTML = `<h2>Koppelen lukte niet</h2><p class="sub">${esc(stap.reden)}</p>
+      <div class="acties"><a class="knop" href="/apparaten">Terug</a></div>`;
+    return;
+  }
+  const fouten = stap.fouten || {};
+  $("kaart").innerHTML = `<h2>${esc(naam)} koppelen</h2>
+    <p class="sub">${esc(UITLEG[integratie] || "Vul de gegevens in die het apparaat nodig heeft.")}</p>
+    ${fouten.base ? `<div class="err">${esc(fouten.base)}</div>` : ""}
+    <form id="form" novalidate>
+      ${stap.velden.length ? stap.velden.map(v => veld(v) + (fouten[v.naam] ? `<div class="veldfout">${esc(fouten[v.naam])}</div>` : "")).join("")
+                          : `<p class="sub">Klopt het dat dit jouw apparaat is?</p>`}
+      <div class="veilig">${VEILIG[integratie] || "🔒 Je gegevens blijven in het kastje. Stroomdijk bewaart ze niet zelf en stuurt ze nergens anders heen."}</div>
+      <div class="acties"><button type="button" class="link" id="terug">Annuleren</button>
+        <button type="submit" class="primair" id="go">${stap.velden.length ? "Koppelen" : "Ja, koppelen"}</button></div>
+    </form>`;
+  $("terug").onclick = async () => { try { await api("DELETE", `/api/koppelen/${flow}`); } catch (e) {} location.href = "/apparaten"; };
+  $("form").onsubmit = async e => {
+    e.preventDefault();
+    const knop = $("go"); knop.disabled = true; knop.textContent = "Bezig met koppelen…";
+    try { toon(await api("POST", `/api/koppelen/${flow}`, { invoer: lees(stap.velden) })); }
+    catch (err) { fout(err); }
+  };
+}
+
+function fout(err) {
+  $("kaart").innerHTML = `<h2>Er ging iets mis</h2><p class="sub">${esc(err.message)}</p>
+    <div class="acties"><a class="knop" href="/apparaten">Terug</a></div>`;
+}
+
+api("POST", "/api/koppelen", { integratie, flow_id: flow }).then(toon).catch(fout);
+</script>
+</body>
+</html>

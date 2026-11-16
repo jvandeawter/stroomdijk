@@ -182,6 +182,16 @@ De knoppen Koppelen en Toevoegen doen nog niets, dat komt in M5. De app draait n
 
 **M5. Koppelen en dashboard vullen.** Een koppel-wizard per apparaat: eerst de Envoy en daarna eventueel SolarEdge. Het net komt in dit huis pas als er een officieel uit te lezen P1-meter is. Na elke koppeling vallen de sensoren vanzelf in de rollen en verschijnen de tegels. Klaar als: het dashboard live de echte waarden toont, zonder handwerk en zonder dubbel tellen, en het eigen dashboard na elke koppeling gewoon doorloopt.
 
+*Uitkomst M5 (2026-11-16): de Envoy is gekoppeld.*
+
+- **Koppelen:** dat kan nu vanuit de app (`/koppelen`, `/api/koppelen`). Het formulier komt rechtstreeks uit de config flow van Home Assistant. Bij de echte Envoy zijn dat het adres (al ingevuld), het Enphase-account en een keuze voor een eigen token. De eigenaar heeft zelf gekoppeld met zijn Enphase-account.
+- **Sensoren:** de echte Envoy heeft `current_power_production` (kW) en `daily_production` (kWh), precies zoals de regels verwachtten, dus `enphase_envoy` staat nu op `geverifieerd: true`. De Envoy levert in totaal 69 entiteiten, vooral per omvormer. Die tellen niet dubbel.
+- **Dashboard:** het vulde zich vanzelf met alleen zon.
+- **Eigen dashboard:** leest de Envoy gewoon door (dezelfde waarden), reageert in ongeveer 1 ms en heeft geen fouten.
+- **Tests:** 41, allemaal groen.
+
+Nog open in M5: SolarEdge, want de daglimiet van de cloud-API moet eerst uitgezocht worden.
+
 **M6. Wifi instellen.** Container `stroomdijk-setup` met hotspot en instelpagina, getest op wlan0 terwijl de kabel de hoofdverbinding blijft. Daarvoor zet jij eenmalig wifi aan op de Pi (wifi-land en blokkade opheffen, met sudo). Klaar als: je met je telefoon via "Stroomdijk-xxxx" een wifi kunt kiezen, de Pi verbindt, en kabel, Tailscale, Bluetooth en het eigen dashboard ongestoord blijven. Daarna gaat de hotspot weer uit.
 
 **M7. Generale repetitie.** `stroomdijk-ha` leeggooien en de hele route opnieuw doorlopen zoals een klant: hotspot, wifi, inrichten, zoeken, koppelen, dashboard. Vastleggen in `docs/testen-op-de-pi.md` en een nacht laten draaien.

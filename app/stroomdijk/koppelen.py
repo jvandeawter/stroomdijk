@@ -22,6 +22,8 @@ LABELS = {
     "site_id": "Site-ID",
     "api_key": "API-sleutel",
     "name": "Naam",
+    "use_manual_token": "Zelf een token invullen (voor gevorderden)",
+    "token": "Token",
 }
 
 FOUTEN = {

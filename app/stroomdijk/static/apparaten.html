@@ -53,7 +53,6 @@ const ico = (integratie, fallback) => {
 };
 const BRON = { zeroconf: "gevonden op je netwerk", ssdp: "gevonden op je netwerk", dhcp: "gevonden op je netwerk",
                bluetooth: "gevonden via Bluetooth" };
-const LATER = `<button disabled title="Koppelen komt in de volgende stap">Koppelen</button>`;
 
 function rij(icoon, naam, uitleg, rechts) {
   return `<div class="dev">${icoon}<div><div class="nm">${esc(naam)}</div><div class="ds">${uitleg}</div></div>${rechts}</div>`;
@@ -63,7 +62,8 @@ function teken(d) {
   let h = "";
   h += `<section class="lijst"><h2>Gevonden in je huis</h2>`;
   h += d.gevonden.length ? d.gevonden.map(g => rij(ico(g.integratie), g.naam,
-        `${esc(g.omschrijving)} · ${BRON[g.bron] || esc(g.bron)}${g.info.host ? " · " + esc(g.info.host) : ""}`, LATER)).join("")
+        `${esc(g.omschrijving)} · ${BRON[g.bron] || esc(g.bron)}${g.info.host ? " · " + esc(g.info.host) : ""}`,
+        `<a class="knop" href="/koppelen?integratie=${encodeURIComponent(g.integratie)}&flow=${encodeURIComponent(g.flow_id)}">Koppelen</a>`)).join("")
       : `<div class="geen">Nog geen nieuwe energieapparaten gevonden. Stroomdijk blijft zoeken.</div>`;
   h += `</section>`;
 
@@ -76,7 +76,7 @@ function teken(d) {
   if (d.handmatig.length) {
     h += `<section class="lijst"><h2>Mis je iets?</h2><p class="sub">Sommige apparaten zitten niet in je netwerk maar in de cloud van de fabrikant. Die voeg je met de hand toe.</p>
           ${d.handmatig.map(g => rij(ico(g.integratie), g.naam, `${esc(g.omschrijving)} · via de cloud`,
-          `<button disabled title="Toevoegen komt in de volgende stap">Toevoegen</button>`)).join("")}</section>`;
+          `<a class="knop" href="/koppelen?integratie=${encodeURIComponent(g.integratie)}">Toevoegen</a>`)).join("")}</section>`;
   }
 
   if (d.niet_ondersteund.length) {

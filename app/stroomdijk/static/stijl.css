@@ -84,3 +84,21 @@ a { color: inherit; }
 .pill.ok { background: color-mix(in srgb, var(--batt) 15%, transparent); color: var(--batt); font-weight: 600; }
 .pill.no { background: color-mix(in srgb, var(--muted) 15%, transparent); color: var(--muted); }
 .geen { padding: 14px 0; color: var(--muted); font-size: 14px; }
+
+/* koppelscherm */
+.smal { max-width: 520px; }
+.kaart { margin-top: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+.kaart h2 { font-size: 19px; margin: 0 0 6px; }
+.kaart label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 4px; }
+.kaart label.vink { display: flex; gap: 8px; align-items: center; color: var(--ink); font-size: 14px; }
+.kaart input:not([type=checkbox]), .kaart select { font: inherit; width: 100%; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.veldfout { color: var(--warn); font-size: 12px; margin-top: 4px; }
+.veilig { display: flex; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 16px; padding: 10px 12px;
+  border-radius: 10px; background: color-mix(in srgb, var(--batt) 7%, transparent); }
+.acties { display: flex; gap: 10px; margin-top: 18px; align-items: center; justify-content: space-between; }
+button.primair, a.primair { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; padding: 9px 16px; }
+button.link { background: none; border: none; color: var(--muted); padding: 6px 0; text-decoration: underline; }
+.gelukt { text-align: center; padding: 10px 0; }
+.gelukt .vinkje { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 10px; display: grid; place-content: center;
+  background: color-mix(in srgb, var(--batt) 15%, var(--card)); color: var(--batt); font-size: 28px; font-weight: 700; }

@@ -10,7 +10,7 @@
     "soort": "zon",
     "omschrijving": "Zonnepanelen",
     "verbinding": "lokaal",
-    "geverifieerd": false,
+    "geverifieerd": true,
     "rollen": [
       {"rol": "zon_vermogen", "device_class": "power", "sleutel": ["current_power_production"]},
       {"rol": "zon_vandaag", "device_class": "energy", "sleutel": ["daily_production", "energy_production_today"]}
