@@ -29,3 +29,9 @@ Stroomdijk doorloopt de onboarding van zijn eigen Home Assistant via de API, met
 
 ## 2026-11-16: geen default_config in de Stroomdijk-HA
 De Stroomdijk-HA laadt alleen wat nodig is (frontend, config, zeroconf, ssdp, dhcp, recorder, history, energy). Waarom: default_config start ook go2rtc en Bluetooth, die botsen met een andere Home Assistant op dezelfde Pi.
+
+## 2026-11-16: demomodus en live via Server-Sent Events
+De app heeft een demomodus met nepwaarden (STROOMDIJK_DEMO=1), zodat je het dashboard kunt bekijken zonder gekoppelde apparaten. Live waarden gaan via Server-Sent Events: eenvoudig, één richting, en de browser verbindt vanzelf opnieuw.
+
+## 2026-11-16: de app bevestigt de HTTP-config van Home Assistant
+Home Assistant 2026.11 zet de poort uit configuration.yaml eerst op proef. Zonder bevestiging binnen 5 minuten valt hij terug op 8123. De app roept daarom bij elke verbinding http/config/promote aan als de proefconfig actief is en werkt. Waarom: op een Pi met een tweede Home Assistant mag Stroomdijk nooit naar 8123 terugvallen.

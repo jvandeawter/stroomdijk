@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stroomdijk</title>
+<meta name="apple-mobile-web-app-title" content="Stroomdijk">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<style>
+:root {
+  --bg: #f4f2ee; --card: #ffffff; --ink: #1d1d1b; --muted: #75716a; --line: #e4e0d8;
+  --sun: #d98a00; --batt: #1f8a5b; --home: #3a5bd9; --grid: #8a5a9e; --warn: #c0392b;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #151514; --card: #1f1f1d; --ink: #f1efe9; --muted: #9b968c; --line: #33322f;
+          --sun: #f0a830; --batt: #3cc184; --home: #7a93ff; --grid: #c08ad6; --warn: #ff6b5b; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 24px 16px 48px; }
+button { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 7px 12px; cursor: pointer; }
+button:disabled { color: var(--muted); cursor: default; }
+.sub { color: var(--muted); font-size: 13px; }
+h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 15px; margin: 0 0 8px; }
+
+header.banner { position: relative; overflow: hidden; min-height: 128px; padding: 18px 20px; border: 1px solid var(--line);
+  border-radius: 18px; background: color-mix(in srgb, var(--sun) 5%, var(--card));
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.banner .scene { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.banner .brand, .banner .merk { position: relative; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo { width: 46px; height: 46px; flex: none; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--batt); margin-right: 6px; vertical-align: 1px; }
+.dot.off { background: var(--warn); }
+.demo { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--sun);
+  border: 1px solid var(--sun); border-radius: 999px; padding: 1px 8px; margin-left: 8px; vertical-align: 2px; }
+.err { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--warn) 12%, transparent);
+  color: var(--warn); font-size: 13px; }
+.err[hidden] { display: none; }
+
+.tabs { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.tabs button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.flows { margin-top: 16px; display: grid; grid-template-columns: repeat(var(--n, 4), 1fr); gap: 12px; }
+.flow { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; border-top: 4px solid var(--c); }
+.flow .k { color: var(--muted); font-size: 13px; }
+.flow .v { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.flow .v small, .ph .v small, .tel .v small { font-size: 14px; font-weight: 500; color: var(--muted); }
+.flow .d { font-size: 12px; color: var(--muted); margin-top: 2px; min-height: 1.4em; }
+
+.panel { margin-top: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.bronnen { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.ph { border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.ph .k { color: var(--muted); font-size: 12px; font-weight: 600; }
+.ph .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ph .d { font-size: 12px; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 8px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--sun); border-radius: 3px; transition: width .6s; }
+.tellers { margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.tel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.tel .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+.tel .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.leeg { margin-top: 16px; border: 1px dashed var(--line); border-radius: 16px; padding: 24px; text-align: center; color: var(--muted); }
+.leeg b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+
+@media (max-width: 720px) { .flows { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { header.banner h1 { font-size: 19px; } .logo { width: 40px; height: 40px; }
+  header.banner { padding: 16px; } .phases { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="banner">
+    <svg class="scene" viewBox="0 0 680 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <circle cx="560" cy="58" r="30" style="fill:var(--sun)" opacity=".18"/>
+      <path d="M0 128 C120 118 220 104 330 100 C450 96 560 110 680 118 V150 H0Z" style="fill:var(--batt)" opacity=".10"/>
+      <path d="M0 128 C120 118 220 104 330 100 C450 96 560 110 680 118" fill="none" style="stroke:var(--batt)" stroke-width="1.5" opacity=".35"/>
+      <g fill="none" style="stroke:var(--muted)" stroke-width="1.5" opacity=".5" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M410 100 432 82 454 100"/><path d="M414 97v4h36v-4"/>
+        <path d="M418 90 432 79 446 90" style="stroke:var(--home)"/>
+        <path d="M300 104v-24M296 104h8"/><path d="M316 103v-18M312 103h8"/>
+      </g>
+    </svg>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="40" cy="22" r="10" style="fill:var(--sun)"/>
+        <path d="M6 48 C20 40 34 38 58 42" fill="none" style="stroke:var(--batt)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M6 56 C22 50 36 48 58 51" fill="none" style="stroke:var(--home)" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+      </svg>
+      <div>
+        <h1>Mijn huis<span class="demo" id="demo" hidden>demo</span></h1>
+        <div class="sub" id="wat" style="margin-top:2px">&nbsp;</div>
+        <div class="sub" style="margin-top:6px"><span class="dot off" id="dot"></span><span id="upd">Verbinden…</span></div>
+      </div>
+    </div>
+    <div class="merk sub">Stroomdijk</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="on">Energie</button>
+    <button disabled title="Komt in de volgende stap">Apparaten</button>
+  </nav>
+  <div class="err" id="err" hidden></div>
+
+  <section class="flows" id="flows"></section>
+  <div id="panelen"></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const nl = (v, d) => Number(v).toLocaleString("nl-NL", { minimumFractionDigits: d, maximumFractionDigits: d });
+function watt(w) {
+  if (w == null) return "–";
+  return Math.abs(w) >= 1000 ? `${nl(w / 1000, 2)} <small>kW</small>` : `${Math.round(w)} <small>W</small>`;
+}
+const kwh = k => k == null ? "–" : `${Number(k).toLocaleString("nl-NL", { maximumFractionDigits: 1 })} <small>kWh</small>`;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function tegel(k, w, d, c) {
+  return `<div class="flow" style="--c:var(${c})"><div class="k">${k}</div><div class="v">${watt(w == null ? null : Math.abs(w))}</div><div class="d">${d}</div></div>`;
+}
+
+function teken(o) {
+  $("demo").hidden = !o.demo;
+  $("dot").className = "dot" + (o.verbonden ? "" : " off");
+  $("upd").textContent = o.verbonden ? "Bijgewerkt " + new Date(o.ts * 1000).toLocaleTimeString("nl-NL")
+                                     : "Geen verbinding met de meetgegevens";
+  $("err").hidden = o.verbonden;
+  $("err").textContent = o.verbonden ? "" : "Stroomdijk kan de gegevens nu niet ophalen. Hij probeert het vanzelf opnieuw.";
+
+  const zon = o.zon, net = o.net;
+  $("wat").textContent = [zon && "Zon", net && (zon ? "net" : "Net")].filter(Boolean).join(" en ") || "Nog niets gekoppeld";
+
+  const t = [];
+  if (zon) t.push(tegel("Zonne-opwek", zon.w,
+    zon.bronnen.map(b => `${esc(b.label)} ${b.w == null ? "–" : Math.round(b.w) + " W"}`).join(" · "), "--sun"));
+  if (o.huis_w != null) t.push(tegel("Huisverbruik", o.huis_w, "zon + net", "--home"));
+  if (net) t.push(tegel("Stroomnet (slimme meter)", net.w,
+    net.w == null ? "" : net.w >= 0 ? "afname van net" : "teruglevering aan net", "--grid"));
+  $("flows").style.setProperty("--n", Math.max(t.length, 1));
+  $("flows").innerHTML = t.join("");
+
+  let p = "";
+  if (!zon && !net) {
+    p += `<div class="leeg"><b>Je dashboard is nog leeg</b>Koppel een apparaat, dan verschijnen hier vanzelf je gegevens.</div>`;
+  }
+  if (zon) {
+    const max = Math.max(3000, ...zon.bronnen.map(b => b.w || 0));
+    p += `<section class="panel"><h2>Zonnepanelen per omvormer</h2><div class="bronnen">${zon.bronnen.map(b => `
+      <div class="ph"><div class="k">${esc(b.label)}</div><div class="v">${watt(b.w)}</div>
+      <div class="d">${b.vandaag_kwh == null ? "&nbsp;" : "vandaag " + nl(b.vandaag_kwh, 1) + " kWh"}</div>
+      <div class="bar"><i style="width:${Math.min(100, (b.w || 0) / max * 100)}%"></i></div></div>`).join("")}</div></section>`;
+  }
+  if (net && net.fasen.length) {
+    p += `<section class="panel"><h2>Stroomnet per fase</h2><div class="phases">${net.fasen.map(f => `
+      <div class="ph"><div class="k">${f.fase}</div><div class="v">${watt(f.w == null ? null : Math.abs(f.w))}</div>
+      <div class="d">${f.v == null ? "" : nl(f.v, 1) + " V · "}${f.w == null ? "" : f.w >= 0 ? "afname" : "teruglevering"}</div></div>`).join("")}</div></section>`;
+  }
+  const tel = [];
+  if (zon && zon.vandaag_kwh != null) tel.push(["Zon vandaag", zon.vandaag_kwh]);
+  if (net && net.afname_totaal_kwh != null) tel.push(["Afname (teller meter)", net.afname_totaal_kwh]);
+  if (net && net.teruglevering_totaal_kwh != null) tel.push(["Teruglevering (teller meter)", net.teruglevering_totaal_kwh]);
+  if (tel.length) p += `<section class="tellers">${tel.map(([k, v]) => `<div class="tel"><div class="k">${k}</div><div class="v">${kwh(v)}</div></div>`).join("")}</section>`;
+  $("panelen").innerHTML = p;
+}
+
+function verbind() {
+  const es = new EventSource("/api/stream");
+  es.onmessage = e => teken(JSON.parse(e.data));
+  es.onerror = () => {
+    $("dot").className = "dot off";
+    $("upd").textContent = "Verbinding met Stroomdijk kwijt, opnieuw proberen…";
+  };
+}
+fetch("/api/now").then(r => r.json()).then(teken).catch(() => {});
+verbind();
+</script>
+</body>
+</html>

@@ -158,6 +158,17 @@ Er zijn 24 tests tegen een nep-Home Assistant (`app/tests/nep_ha.py`) en ze zijn
 
 **M3. Ontwerp vastleggen en dashboard-skelet.** Het eigen dashboard alleen lezend bekijken en de stijl vastleggen in `docs/ontwerp-dashboard.md`. Daarna de app-container op 8090 met een dashboard in die stijl, gevuld met nepwaarden. Klaar als: je zegt dat het eruitziet zoals jouw dashboard.
 
+*Uitkomst M3 (2026-11-16): gedaan, wacht op je oordeel.*
+
+- **Ontwerp:** staat in `docs/ontwerp-dashboard.md`.
+- **App:** container `stroomdijk` op poort 8090, met het dashboard in jouw stijl. Het vult zich via Server-Sent Events. Tegels verschijnen alleen als de rol gevuld is, en een leeg huis krijgt een uitnodiging om te koppelen. Er zijn 30 tests en ze zijn allemaal groen.
+- **Demomodus:** `STROOMDIJK_DEMO=1` in compose toont nepwaarden. Met `STROOMDIJK_DEMO=0` toont hij de echte gegevens uit `stroomdijk-ha`. Die verbinding is getest.
+
+Belangrijke les: Home Assistant 2026.11 zet de poort uit `configuration.yaml` eenmalig op proef over naar zijn opslag (`.storage/http`). Wordt die proef niet binnen 5 minuten bevestigd (`http/config/promote`), dan valt hij terug op 8123, de poort van de andere Home Assistant. Dat gebeurde om 14:07. De Stroomdijk-HA kon 8123 niet krijgen en had daarna geen werkende webserver meer. De andere Home Assistant merkte er niets van.
+
+- **Hersteld:** de poort is in de opslag vastgezet op 8124.
+- **Voorkomen:** de app bevestigt een proefconfig voortaan zelf bij het verbinden (`bevestig_http_config`).
+
 **M4. Gevonden apparaten.** De pagina "Apparaten" toont de energieapparaten die `stroomdijk-ha` gevonden heeft, plus een knop om SolarEdge met de hand toe te voegen. De Anker staat erbij als "niet ondersteund". Klaar als: de lijst klopt met wat er in het netwerk staat.
 
 **M5. Koppelen en dashboard vullen.** Een koppel-wizard per apparaat: eerst de Envoy en daarna eventueel SolarEdge. Het net komt in dit huis pas als er een officieel uit te lezen P1-meter is. Na elke koppeling vallen de sensoren vanzelf in de rollen en verschijnen de tegels. Klaar als: het dashboard live de echte waarden toont, zonder handwerk en zonder dubbel tellen, en het eigen dashboard na elke koppeling gewoon doorloopt.

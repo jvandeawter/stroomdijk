@@ -6,11 +6,14 @@
 set -eu
 HOST="${1:-admin@rpi.local}"
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
+SYNC="rsync -a --delete --exclude __pycache__ --exclude tests --exclude *.egg-info"
 
-ssh "$HOST" 'mkdir -p ~/stroomdijk/ha-config ~/stroomdijk/scripts ~/stroomdijk/geheim && chmod 700 ~/stroomdijk/geheim'
+ssh "$HOST" 'mkdir -p ~/stroomdijk/ha-config ~/stroomdijk/scripts ~/stroomdijk/data ~/stroomdijk/app ~/stroomdijk/geheim && chmod 700 ~/stroomdijk/geheim'
 rsync -a "$HERE/deploy/compose.yaml" "$HOST:stroomdijk/compose.yaml"
-rsync -a --delete "$HERE/scripts/" "$HOST:stroomdijk/scripts/"
+$SYNC "$HERE/scripts/" "$HOST:stroomdijk/scripts/"
+$SYNC "$HERE/app/" "$HOST:stroomdijk/app/"
+rsync -a "$HERE/deploy/Dockerfile.app" "$HOST:stroomdijk/app/Dockerfile"
 # configuration.yaml mag de container zelf niet overschrijven; wij zijn de baas over dit ene bestand
 rsync -a "$HERE/ha/configuration.yaml" "$HOST:stroomdijk/ha-config/configuration.yaml"
 
-ssh "$HOST" 'cd ~/stroomdijk && docker compose up -d'
+ssh "$HOST" 'cd ~/stroomdijk && docker compose up -d --build'

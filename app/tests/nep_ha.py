@@ -29,6 +29,9 @@ class NepHA:
         self.ws: List[web.WebSocketResponse] = []
         self.abos: List[tuple] = []          # (ws, id, event_type)
         self.gebruiker: Optional[dict] = None
+        self.http: dict = {"stable": {"server_port": 8123, "error": None},
+                           "pending": {"server_port": 8124, "error": None},
+                           "active_config_type": "pending", "revert_at": "2026-11-16T12:05:00+00:00"}
 
         self.app = web.Application()
         r = self.app.router
@@ -133,6 +136,15 @@ class NepHA:
             return ok(list(self.states.values()))
         if soort == "subscribe_events":
             self.abos.append((ws, mid, m.get("event_type")))
+            return ok(None)
+        if soort == "http/config":
+            return ok(self.http)
+        if soort == "http/config/promote":
+            if not self.http.get("pending"):
+                return {"id": mid, "type": "result", "success": False,
+                        "error": {"code": "not_allowed", "message": "No pending HTTP config to promote"}}
+            self.http = {**self.http, "stable": self.http["pending"], "pending": None,
+                         "active_config_type": "stable", "revert_at": None}
             return ok(None)
         if soort == "auth/long_lived_access_token":
             self.tokens.add(LLAT)

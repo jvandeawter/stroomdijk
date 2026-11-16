@@ -93,3 +93,25 @@ async def richt_in(s: aiohttp.ClientSession, url: str, geheim_dir: str,
     _bewaar(token_pad, token, eigenaar)
     log.info("Home Assistant ingericht")
     return token
+
+
+async def bevestig_http_config(client) -> bool:
+    """Bevestigt een HTTP-config die Home Assistant op proef draait.
+
+    Sinds 2026.11 zet Home Assistant de poort uit configuration.yaml eenmalig 'op proef'
+    over naar zijn opslag. Wordt dat niet binnen 5 minuten bevestigd, dan valt hij terug
+    op poort 8123. Op een kastje naast een andere Home Assistant botst dat. Zijn we via
+    de proefconfig verbonden, dan werkt die dus: bevestigen. Geeft True als er iets
+    bevestigd is.
+    """
+    try:
+        cfg = await client.vraag("http/config")
+    except HAFout as e:
+        log.warning("http-config niet op te vragen: %s", e)
+        return False
+    pending = (cfg or {}).get("pending")
+    if cfg.get("active_config_type") == "pending" and pending and not pending.get("error"):
+        await client.vraag("http/config/promote")
+        log.info("http-config van Home Assistant bevestigd (poort %s)", pending.get("server_port"))
+        return True
+    return False

@@ -18,3 +18,28 @@ services:
     volumes:
       - ./ha-config:/config
       - /etc/localtime:/etc/localtime:ro
+
+  stroomdijk:
+    build: ./app
+    image: stroomdijk-app:dev
+    container_name: stroomdijk
+    restart: unless-stopped
+    # eigen bridge-netwerk; alleen poort 8090 naar buiten
+    ports:
+      - "8090:8090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    cpus: 0.5
+    mem_limit: 256m
+    environment:
+      - TZ=Europe/Amsterdam
+      # 1 = nepwaarden (om het dashboard te bekijken), 0 = echte gegevens uit stroomdijk-ha
+      - STROOMDIJK_DEMO=${STROOMDIJK_DEMO:-1}
+      - STROOMDIJK_HA_URL=http://host.docker.internal:8124
+      - STROOMDIJK_GEHEIM=/run/geheim
+      - STROOMDIJK_DATA=/data
+    volumes:
+      - ./geheim:/run/geheim
+      - ./data:/data
+    depends_on:
+      - stroomdijk-ha
